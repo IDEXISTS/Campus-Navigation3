@@ -1,0 +1,311 @@
+#define MAX_VERTEX_NUM 40
+#define Q 6
+#define MAX 40
+#include<stdlib.h>
+#include<stdio.h>
+#include<conio.h>
+#include<string.h>
+typedef struct ArCell
+{
+int adj;
+}ArCell,AdjMatrix[MAX_VERTEX_NUM][MAX_VERTEX_NUM];//设置邻接矩阵存图（存权值） 
+
+typedef struct// 
+{
+char name[30];
+int num;
+char introduction[100];
+}infotype;//这是vexs[MAX_VERTEX_NUM]的内部信息 
+
+typedef struct//图中的信息，包括点，边 
+{
+infotype vexs[MAX_VERTEX_NUM];
+AdjMatrix arcs;
+int vexnum,arcnum;//弧和点的数量 
+}MGraph;
+
+MGraph b;//定义了一个MGraph类型的全局变量 
+
+void cmd(void);
+
+MGraph InitGraph(void);//初始化图 
+
+void Menu(void);//主页菜单 
+
+void Browser(MGraph *G);
+
+void ShortestPath_DIJ(MGraph * G);
+
+void Floyd(MGraph *G);
+
+void Search(MGraph *G);
+
+//int LocateVex(MGraph *G,char* v);
+
+//MGraph * CreatUDN(MGraph *G);
+
+//void print(MGraph *G);
+
+int main(void)//主函数 
+{
+system("color 1f");//改变控制台颜色 
+system("mode con: cols=140 lines=130");
+cmd();//听说可以给二维数组排序？ 
+}
+
+void cmd(void)
+{
+int i;
+b=InitGraph();//利用初始化函数初始化一张图 
+Menu();//显示主菜单 
+scanf("%d",&i);//外界输入点 
+while(i!=5)
+{
+switch(i)
+{//system（“cls”）是清屏函数 ；每一个数字对应的功能都不一样 
+case 1:system("cls");Browser(&b);Menu();break;
+case 2:system("cls");ShortestPath_DIJ(&b);Menu();break;
+case 3:system("cls");Floyd(&b);Menu();break;
+case 4:system("cls");Search(&b);Menu();break;
+case 5:exit(1);break;
+
+default:printf("error                   请按规定输入数字（1-5）继续：");//这里可以通过输入规定数字进行矫正，因为下面还有输入函数 
+}
+
+scanf("%d",&i);
+}
+}
+
+
+MGraph InitGraph()//图的初始化（数据库僵硬）单纯地将信息存进邻接矩阵 
+{
+MGraph G;
+int i,j;
+G.vexnum=15;
+G.arcnum=24;
+for(i=0;i<G.vexnum;i++)
+   G.vexs[i].num=i;
+        strcpy(G.vexs[0].name ,"体育馆");//利用复制函数给数组里的“其他信息”赋值，这个其他信息包括了name，num，intruduction 
+        strcpy(G.vexs[1].name ,"大会堂");
+        strcpy(G.vexs[2].name ,"图书馆");
+        strcpy(G.vexs[3].name ,"学术报告厅");
+        strcpy(G.vexs[4].name ,"实验楼");
+        strcpy(G.vexs[5].name ,"办公楼");
+        strcpy(G.vexs[6].name ,"八角楼");
+        strcpy(G.vexs[7].name ,"第二饭堂");
+        strcpy(G.vexs[8].name ,"教学楼");
+        strcpy(G.vexs[9].name ,"隧道口");
+        strcpy(G.vexs[10].name ,"第一饭堂");
+        strcpy(G.vexs[11].name ,"门诊楼");
+        strcpy(G.vexs[12].name ,"又康超市");
+        strcpy(G.vexs[13].name ,"宿舍");
+        strcpy(G.vexs[14].name ,"新天地");
+        strcpy(G.vexs[0].introduction ,"上体育课的地方，也会举行一些比赛");
+        strcpy(G.vexs[1].introduction ,"会举办一些迎新晚会等活动");
+        strcpy(G.vexs[2].introduction ,"里面有学校的校史馆，记录着广外发展的历史，学生可在里面进行自习");
+        strcpy(G.vexs[3].introduction ,"用于作学术报告的地方");
+        strcpy(G.vexs[4].introduction ,"分为ABCDE栋，做实验的地方");
+        strcpy(G.vexs[5].introduction ,"老师办公的地方");
+        strcpy(G.vexs[6].introduction ,"八个脚的建筑");
+        strcpy(G.vexs[7].introduction ,"在第一饭堂旁边的饭堂");
+        strcpy(G.vexs[8].introduction ,"分为ABCDEF栋，学生上课的地方");
+        strcpy(G.vexs[9].introduction ,"连接教学区和生活区");
+        strcpy(G.vexs[10].introduction ,"学校饭堂，菜式丰富");
+        strcpy(G.vexs[11].introduction ,"有相关医疗人员为学生进行服务");
+        strcpy(G.vexs[12].introduction ,"学生对日常用品进行补给的地方");
+        strcpy(G.vexs[13].introduction ,"睡觉的地方");
+        strcpy(G.vexs[14].introduction ,"校外的休闲娱乐的地方");
+for(i=0;i<G.vexnum;i++)
+   for(j=0;j<G.vexnum;j++)
+        G.arcs[i][j].adj=1000000;//一开始使其表示为无穷大 
+            G.arcs[0][1].adj=420;//赋值语句使权值出现，若两点之间权值为无穷大，则说明两点之间无直接的路可走 
+			G.arcs[0][3].adj=500;
+			G.arcs[0][2].adj=400;
+			G.arcs[1][2].adj=80;
+			G.arcs[1][3].adj=150;
+			G.arcs[2][3].adj=150;
+			G.arcs[2][8].adj=400;
+			G.arcs[2][10].adj=880;
+			G.arcs[3][4].adj=150;
+			G.arcs[4][8].adj=200;
+			G.arcs[4][6].adj=300;
+			G.arcs[4][5].adj=270;
+			G.arcs[5][6].adj=80;
+			G.arcs[5][12].adj=1000;
+			G.arcs[6][8].adj=350;
+			G.arcs[7][8].adj=700;
+			G.arcs[7][9].adj=100;
+			G.arcs[8][9].adj=200;
+			G.arcs[8][10].adj=400;
+			G.arcs[9][10].adj=60;
+			G.arcs[9][12].adj=220;
+			G.arcs[10][11].adj=200;
+			G.arcs[12][13].adj=210;
+			G.arcs[12][14].adj=900;
+for(i=0;i<G.vexnum;i++)
+for(j=0;j<G.vexnum;j++)
+G.arcs[j][i].adj=G.arcs[i][j].adj;//此为无向图，则邻接矩阵关于主对角线对称，所以到这里，邻接矩阵中的每一个框里都有了数值 
+return G;
+}
+void Menu()//菜单函数（只是很简单的让它显示出来） 
+{
+printf("\n欢迎来到广东外语外贸大学校园导航系统\n");
+printf("                                            \n");
+printf(" 1.浏览学校 \n");
+printf(" 2.查看路线 \n");
+printf(" 3.所用时间 \n");
+printf(" 4.查看景点\n");
+printf(" 5.退出 \n");
+printf("                                            \n");
+printf("Option-:");
+}
+
+
+void Browser(MGraph *G)//功能1的函数，直接输出各个顶点的信息                                   
+{
+int v;
+printf("                                                              \n");
+printf("编号  景点名称   介绍  \n");
+for(v=0;v<G->vexnum;v++)//循环输出各个顶点的信息 
+printf(" %-4d  %-16s     %-56s    \n",G->vexs[v].num,G->vexs[v].name,G->vexs[v].introduction);
+printf("                                                              \n");
+}
+
+
+void ShortestPath_DIJ(MGraph * G)//求一个顶点到其他各个顶点的路径和距离，功能2的函数 迪杰斯特拉算法 
+{
+int v,w,i,min,t=0,x,flag=1,v0;
+int final[50], D[50], p[50][50];
+while(flag)
+{
+printf("起点到其他各个顶点的最短路线及最短距离\n");
+printf("请输入起始点 编号:");
+scanf("%d",&v0);
+if(v0<0||v0>G->vexnum)
+{
+printf("编号不存在,请重新输入:");//支持输入错误后重新输入，连续两次输入错误都可以重新输入，为什么？ 
+scanf("%d",&v0);
+}
+if(v0>=0&&v0<G->vexnum)
+  flag=0;
+}
+for(v=0;v<G->vexnum;v++)
+{
+    final[v]=0;
+    D[v]=G->arcs[v0][v].adj;//将地图上的值一一赋给D数组 
+    for(w=0;w<G->vexnum;w++)
+        p[v][w]=0;
+    if(D[v]<10000)
+      {
+        p[v][v0]=1;
+		p[v][v]=1;
+      }
+}
+D[v0]=0;
+final[v0]=1;
+for(i=1;i<G->vexnum;i++)
+{
+   min=10000;
+   for(w=0;w<G->vexnum;w++)
+      if(!final[w])
+        if(D[w]<min)
+	      {
+	         v=w;min=D[w];
+	      }
+final[v]=1;
+for(w=0;w<G->vexnum;w++)
+   if(!final[w]&&(min+G->arcs[v][w].adj<D[w]))
+     {
+       D[w]=min+G->arcs[v][w].adj;
+       for(x=0;x<G->vexnum;x++)
+          p[w][x]=p[v][x];
+       p[w][w]=1;
+     }
+}
+for(v=0;v<G->vexnum;v++)
+{
+    if(v0!=v) 
+	  printf("%s",G->vexs[v0].name);
+for(w=0;w<G->vexnum;w++)
+   {
+     if(p[v][w]&&w!=v0) 
+	    printf("-->%s",G->vexs[w].name);
+     t++;
+   }
+     if(t>G->vexnum-1&&v0!=v)
+	    printf(" 总路线长%dm\n\n",D[v]);
+}
+
+}
+
+void Floyd(MGraph *G)//弗洛伊德算法 
+{
+int v,u,i,w,k,j,flag=1,p[15][15][15],D[15][15];
+for(v=0;v<G->vexnum;v++)
+   for(w=0;w<G->vexnum;w++)
+      {
+        D[v][w]=G->arcs[v][w].adj;
+        for(u=0;u<G->vexnum;u++)
+           {
+		     p[v][w][u]=0;
+		   }
+             if(D[v][w]<10000)
+               {
+                p[v][w][v]=1;
+				p[v][w][w]=1;
+               }
+           }
+      
+for(u=0;u<G->vexnum;u++)
+   for(v=0;v<G->vexnum;v++)
+      for(w=0;w<G->vexnum;w++)
+        if(D[v][u]+D[u][w]<D[v][w])
+          { 
+            D[v][w]=D[v][u]+D[u][w];
+            for(i=0;i<G->vexnum;i++)
+               p[v][w][i]=p[v][u][i]||p[u][w][i];
+          }
+while(flag)
+{
+printf("请输入 出发点 和 目的地 编号:");
+scanf("%d%d",&k,&j);
+if(k<0||k>G->vexnum||j<0||j>G->vexnum)
+{
+printf("景点编号不存在,请重新输入:");
+scanf("%d%d",&k,&j);
+}
+if(k>=0&&k<G->vexnum&&j>=0&&j<G->vexnum)
+flag=0;
+}
+printf("%s-->",G->vexs[k].name);
+printf("%s\n",G->vexs[j].name);
+/*for(u=0;u<G->vexnum;u++)
+if(p[k][j]&&k!=u&&j!=u)
+printf("-->%s",G->vexs[u].name);
+printf("-->%s",G->vexs[j].name);*/ 
+printf(" 最短路径长%dm\n",D[k][j]);
+printf(" 预计花费时间%dmin\n",D[k][j]/60);
+}
+
+
+void Search(MGraph *G)//功能四的函数，输出对应的顶点信息，也是按要求输出数组内的内容即可 
+{
+int k,flag=1;
+while(flag)
+{
+  printf("请输入要查看的景点 编号:");
+  scanf("%d",&k);
+  if(k<0||k>G->vexnum)
+    {  
+	   printf("景点编号不存在,请重新输入:");
+       scanf("%d",&k);
+    }
+  if(k>=0&&k<G->vexnum)
+  flag=0;
+}
+printf("                                                                            \n");
+printf(" 编号  景点名称   介绍 \n");
+printf(" %-4d  %-16s  %-56s  \n",G->vexs[k].num,G->vexs[k].name,G->vexs[k].introduction);
+printf("                                                                            \n");
+
+}
